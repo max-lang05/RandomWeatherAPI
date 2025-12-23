@@ -34,7 +34,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: api/
+          path: |
+            api/**
 
   deploy:
     runs-on: ubuntu-latest
