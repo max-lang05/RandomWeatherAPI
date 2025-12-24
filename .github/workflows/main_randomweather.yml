@@ -35,7 +35,7 @@ jobs:
         with:
           name: python-app
           path: |
-            api/**
+            .
 
   deploy:
     runs-on: ubuntu-latest
