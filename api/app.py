@@ -7,7 +7,9 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+# sets database connection string to one stored in Azure web service
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
+#stops unnessecary tracking of the db model
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -15,7 +17,7 @@ api = Api(app)
 
 
 
-#Database of all http requests
+#Database model of all http requests
 class WeatherModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.String)
@@ -61,11 +63,13 @@ windFields = {
     'windDirection': fields.Integer
 }
 
+# All weather
 class Weather(Resource):
     @marshal_with(userFields)
     def post(self):
         args = user_args.parse_args()
         now = datetime.datetime.now()
+        #creates record for the db
         localWeather = WeatherModel(
             date=now.strftime("%Y-%m-%d"),
             time=now.strftime("%H:%M:%S"),
@@ -75,10 +79,13 @@ class Weather(Resource):
             windSpeed=random.randint(1, 64),
             windDirection=random.randint(0, 360)
         )
+        # adds record to db
         db.session.add(localWeather)
+        #saves changes to the database
         db.session.commit()
+        #response back to client
         return localWeather, 200
-
+# Just temp
 class Temperature(Resource):
     @marshal_with(temperatureFields)
     def post(self):
@@ -97,6 +104,7 @@ class Temperature(Resource):
         db.session.commit()
         return tempRecord, 200
 
+#just wind
 class Wind(Resource):
     @marshal_with(windFields)
     def post(self):
@@ -125,6 +133,6 @@ def home():
     
     return '<h1>Weather API</h1>'
 
-
+# create database model if it doesnt exist
 with app.app_context():
     db.create_all()
